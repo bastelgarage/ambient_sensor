@@ -40,7 +40,7 @@ The [RESTful API](https://de.wikipedia.org/wiki/Representational_State_Transfer)
 - LED: `/api/led`
 
 ### ThingSpeak
-To use [ThingSpeak](https://thingspeak.com/) you need to create an account. For further information read the [ThingSpeak's MQTT documentation](https://de.mathworks.com/help/thingspeak/channels-and-charts-api.html). Add your details to the sketch before uploading to the ESP32. The comment in the sketch should give you a hint about the creation of the right topic out of channel ID and API key.
+To use [ThingSpeak](https://thingspeak.com/) you need to create an account. This [tutorial](https://www.youtube.com/watch?v=S3sj2uvRTqQ) can help. For further information read the [ThingSpeak's MQTT documentation](https://de.mathworks.com/help/thingspeak/channels-and-charts-api.html). Add your details to the sketch before uploading to the ESP32. The comment in the sketch should give you a hint about the creation of the right topic out of channel ID and API key.
 
 ### MQTT
 Using [MQTT](https://en.wikipedia.org/wiki/MQTT) requires that you have a local, remote, or cloud-based MQTT broker. The MQTT settings need to be updated in the sketch before uploading.
