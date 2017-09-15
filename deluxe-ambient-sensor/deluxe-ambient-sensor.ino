@@ -4,6 +4,10 @@
 #include <U8g2lib.h>
 #include <RunningMedian.h>
 
+// Links to external libaries:
+// https://github.com/e-radionicacom/BME280-Arduino-Library
+// https://github.com/RobTillaart/Arduino/tree/master/libraries/RunningMedian
+
 // Device name
 String device_name = "delux-sensor";
 
@@ -11,9 +15,10 @@ String device_name = "delux-sensor";
 const char* ssid = "";
 const char* password = "";
 
-// 0: only Web server
+// 0: Only Web server
 // 1: Thingspeak
 // 2: MQTT
+// 3: Only display
 int output = 0;
 
 // MQTT settings
@@ -73,13 +78,13 @@ float old_pressure = 0.0;
 float old_hall = 0.0;
 
 // Settings and variables for touch functionality
-int thresholdGlobal = 10;    
-int thresholdTouch0 = 0;    
+int thresholdGlobal = 10;
+int thresholdTouch0 = 0;
 int thresholdTouch2 = 0;
 int thresholdTouch3 = 0;
 int thresholdTouch4 = 0;
 
-int navigationDisplay = 1;         
+int navigationDisplay = 1;
 
 // Median for the Touch sensors
 RunningMedian medianTouch0 = RunningMedian(5);
@@ -223,57 +228,57 @@ void reconnect() {
 // Show the temperature
 void anzeigeTemperatur() {
   navigationDisplay = 1;
-  u8g2.clearBuffer();          
+  u8g2.clearBuffer();
   u8g2.drawXBM(0 , 4, thermometer_width, thermometer_height,  thermometer_bits);
-  u8g2.setFont(u8g2_font_helvB18_tf); 
+  u8g2.setFont(u8g2_font_helvB18_tf);
   u8g2.setCursor(45, 44);
-  u8g2.print(temperature, 1); 
+  u8g2.print(temperature, 1);
   u8g2.print((char)176);
   u8g2.print("C");
-  u8g2.sendBuffer();         
+  u8g2.sendBuffer();
 }
 
 // Show the humitidy
 void anzeigeFeuchte() {
   navigationDisplay = 2;
-  u8g2.clearBuffer();        
+  u8g2.clearBuffer();
   u8g2.drawXBM(0 , 12, humidity_width, humidity_height,  humidity_bits);
-  u8g2.setFont(u8g2_font_helvB18_tf);  
+  u8g2.setFont(u8g2_font_helvB18_tf);
   u8g2.setCursor(45, 44);
-  u8g2.print(humidity, 1); 
+  u8g2.print(humidity, 1);
   u8g2.print("%");
-  u8g2.sendBuffer();          
+  u8g2.sendBuffer();
 
 }
 
 // Show the pressure
 void anzeigeDruck() {
   navigationDisplay = 3;
-  u8g2.clearBuffer();        
-  u8g2.setFont(u8g2_font_helvB18_tf);  
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_helvB18_tf);
   u8g2.setCursor(8, 46);
-  u8g2.print(pressure, 1); 
+  u8g2.print(pressure, 1);
   u8g2.print(" hPa");
-  u8g2.sendBuffer();          
+  u8g2.sendBuffer();
 }
 
 // Show all
 void anzeigeAll() {
   navigationDisplay = 4;
-  u8g2.clearBuffer();                   
-  u8g2.setFont(u8g2_font_helvB18_tf);   
-  u8g2.setCursor(0, 19);               
-  u8g2.print(temperature, 1); 
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_helvB18_tf);
+  u8g2.setCursor(0, 19);
+  u8g2.print(temperature, 1);
   u8g2.print(" ");
   u8g2.print((char)176);
   u8g2.print("C");
   u8g2.setCursor(0, 41);
-  u8g2.print(humidity, 1); 
+  u8g2.print(humidity, 1);
   u8g2.print("  %");
   u8g2.setCursor(0, 64);
-  u8g2.print(pressure, 1); 
+  u8g2.print(pressure, 1);
   u8g2.print(" hPa");
-  u8g2.sendBuffer();          
+  u8g2.sendBuffer();
 }
 
 void setup() {
@@ -294,7 +299,7 @@ void setup() {
   u8g2.setDrawColor(1);                      // Definition for the color of XBM images
   u8g2.setBitmapMode(1);                     // Mode for XBM images
 
-  // Median 
+  // Median
   while (medianTouch0.getCount() < medianTouch0.getSize()) {
     medianTouch0.add(touchRead(T0));
     medianTouch2.add(touchRead(T2));
@@ -334,7 +339,6 @@ void setup() {
   if (output == 2) {
     mqtt_client.setCallback(callback);
   }
-
 }
 
 void loop() {
@@ -351,34 +355,30 @@ void loop() {
   medianTouch4.add(touchRead(T4));
 
   // Touch check
-  if (medianTouch0.getMedian() < thresholdTouch0)
-  {
+  if (medianTouch0.getMedian() < thresholdTouch0) {
     Serial.println("Touch0");
-    if (navigationDisplay != 1)anzeigeTemperatur();
-  }
-
-  else if (medianTouch2.getMedian() < thresholdTouch2)
-  {
+    if (navigationDisplay != 1) {
+      anzeigeTemperatur();
+    }
+  } else if (medianTouch2.getMedian() < thresholdTouch2) {
     Serial.println("Touch2");
-    if (navigationDisplay != 2)  anzeigeFeuchte();
-  }
-
-
-  else if (medianTouch3.getMedian() < thresholdTouch3)
-  {
+    if (navigationDisplay != 2) {
+      anzeigeFeuchte();
+    }
+  } else if (medianTouch3.getMedian() < thresholdTouch3) {
     Serial.println("Touch3");
-    if (navigationDisplay != 3)    anzeigeDruck();
-  }
-  else if (medianTouch4.getMedian() < thresholdTouch4)
-  {
+    if (navigationDisplay != 3) {
+      anzeigeDruck();
+    }
+  } else if (medianTouch4.getMedian() < thresholdTouch4) {
     Serial.println("Touch4");
-    if (navigationDisplay != 4)    anzeigeAll();
+    if (navigationDisplay != 4) {
+      anzeigeAll();
+    }
   }
-
-
 
   if (millis() - lastDisplay > display_interval) {
-    lastDisplay = millis(); 
+    lastDisplay = millis();
     switch (navigationDisplay) {
       case 1:
         anzeigeTemperatur();
@@ -398,289 +398,288 @@ void loop() {
   }
 
 
-if (client) {                             // If you get a client,
-  while (client.connected()) {            // Loop while the client's connected
-    if (client.available()) {             // If there's bytes to read from the client,
-      String request = client.readString();  // Read client request
-      Serial.println("-- Complete HTTP method -------------------------------");
-      Serial.println(request);
-      Serial.println("-- HTTP method -------------------------------");
-      String method = splitString(request, '\r', 0);
-      Serial.println(method);
-      Serial.println("-- POST data -------------------------------");
-      String post_data = splitString(request, '\r\n\n', 7);
-      Serial.println(post_data);
-      Serial.println();
-      client.flush();
+  if (client) {                             // If you get a client,
+    while (client.connected()) {            // Loop while the client's connected
+      if (client.available()) {             // If there's bytes to read from the client,
+        String request = client.readString();  // Read client request
+        Serial.println("-- Complete HTTP method -------------------------------");
+        Serial.println(request);
+        Serial.println("-- HTTP method -------------------------------");
+        String method = splitString(request, '\r', 0);
+        Serial.println(method);
+        Serial.println("-- POST data -------------------------------");
+        String post_data = splitString(request, '\r\n\n', 7);
+        Serial.println(post_data);
+        Serial.println();
+        client.flush();
 
-      if (method.equals("GET /favicon.ico HTTP/1.1")) {
-        Serial.println("Get the favicon.ico");
-      }
-
-      else if (method.equals("GET / HTTP/1.1")) {
-        Serial.println("Request for /");
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-type:text/html");
-        client.println();
-        client.println("<!DOCTYPE HTML><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-        client.println("</head><body><center>");
-        client.println("<p><b><a href='/'>Ambient Sensor</a></b> | <a href='/api'>RESTful API</a></p>");
-        client.println("<h1>Overview</h1><p>");
-
-        // Device details
-        client.println("<table><tr><th align='left'>Device</th></tr>");
-        client.println(String("<tr><td>Device name:</td><td>") + device_name + "</td></tr>");
-        client.print("<tr><td>Chip ID:</td><td>");
-        client.printf("%04X", (uint16_t)(chipid >> 32));
-        client.printf("%08X\n", (uint32_t)chipid);
-        client.println("</td></tr>");
-        client.println("<tr><td>Restart:</td><td><a href=\"/api/device/reboot\">yes</a></td></tr>");
-        //client.println(String("<tr><td>Uptime</td><td>") + timeClient.getFormattedTime() + "</td></tr>");
-        client.println("</table>");
-        client.println("<br />");
-
-        // Sensor values
-        client.println("<table><tr><th align='left'>Sensors</th></tr>");
-        client.println(String("<tr><td>Temperature:</td><td>") + temperature + " C</td></tr>");
-        client.println(String("<tr><td>Humidity:</td><td>") + humidity + " % RH</td></tr>");
-        client.println(String("<tr><td>Pressure:</td><td>") + pressure + " hPa</td></tr>");
-        client.println(String("<tr><td>Hall:</td><td>") + hall + "</td></tr>");
-        //client.println(String("<tr><td>xxxx</td><td>xxx</td></tr>");
-        client.println("</table>");
-        client.println("<br />");
-
-        // the content of the HTTP response follows the header:
-        client.print(String("<b>LED</b> (Pin ") + led_pin + "):&nbsp;");
-        if (digitalRead(led_pin) == HIGH) {
-          client.print("on");
-        } else {
-          client.print("off");
+        if (method.equals("GET /favicon.ico HTTP/1.1")) {
+          Serial.println("Get the favicon.ico");
         }
-        client.println("&nbsp;(Turn <a href=\"/api/led/on\">on</a> or <a href=\"/api/led/off\">off</a>)");
-        client.println("<br />");
 
-        client.println("<hr>");
-        client.println("<p>More sensors, actuators, and kits are available in the online shop of <a href='https://www.bastelgarage.ch'>Bastelgarage.ch</a>.</p>");
-        client.println("</center></body></html>");
-        // The HTTP response ends with another blank line:
-        client.println();
-        // break out of the while loop:
-        client.stop();
-      }
-      // RESTful API section
-      else if (method.equals("GET /api HTTP/1.1")) {
-        Serial.println("Request for /api");
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-type:text/html");
-        client.println();
-        client.println("<!DOCTYPE HTML><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-        client.println("</head><body><center>");
-        client.println("<p><b><a href='/'>Ambient Sensor</a></b> | <a href='/api'>RESTful API</a></p>");
-        client.println("<h1>RESTful API</h1><p>");
-        client.println("<p>The RESTful API let you integrate your Measuring Box in your own home automation system or into third-party tools.</p>");
-        client.println("<br />");
+        else if (method.equals("GET / HTTP/1.1")) {
+          Serial.println("Request for /");
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-type:text/html");
+          client.println();
+          client.println("<!DOCTYPE HTML><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+          client.println("</head><body style='font-family: Verdana,Geneva,sans-serif;'><center>");
+          client.println("<p><b><a href='/'>Ambient Sensor</a></b> | <a href='/api'>RESTful API</a></p>");
+          client.println("<h1>Overview</h1><p>");
 
-        // API end points
-        client.println("<table><tr><th align='left'>End points</th><th align='left'>URL</th></tr>");
-        client.println("<tr><td>All values:</td><td><a href=\"api/states\">api/states</a></td></tr>");
-        client.println("<tr><td>Temperature:</td><td><a href=\"api/temperature\">api/temperature</a></td></tr>");
-        client.println("<tr><td>Humidity:</td><td><a href=\"api/humidity\">api/humidity</a></td></tr>");
-        client.println("<tr><td>Pressure:</td><td><a href=\"api/pressure\">api/pressure</a></td></tr>");
-        client.println("<tr><td>Hall:</td><td><a href=\"api/hall\">api/hall</a></td></tr>");
-        client.println("<tr><td>LED:</td><td><a href=\"api/led\">api/led</a></td></tr>");
-        // client.println("<tr><td>xxxx</td><td>xxx</td></tr>");
-        client.println("</table>");
-        client.println("<br />");
-        client.println("<p>The states can be retrieved by HTTP GET requests. For the temperature the command-line tool <code>curl</code> could be used.</p>");
-        client.println(String("<p>eg. <code>$ curl ") + toStringIp(WiFi.localIP()) + "/api/temperature</code></p>");
-        client.println("<p>To change the state of the LED, issue a HTTP POST requests.");
-        client.println("As browsers usualy don't support POST requests, GET requests are available to <code>/api/led/on</code> to switch the LED on and <code>api/led/off</code> to switch it off.</p>");
+          // Device details
+          client.println("<table><tr><th align='left'>Device</th></tr>");
+          client.println(String("<tr><td>Device name:</td><td>") + device_name + "</td></tr>");
+          client.print("<tr><td>Chip ID:</td><td>");
+          client.printf("%04X", (uint16_t)(chipid >> 32));
+          client.printf("%08X\n", (uint32_t)chipid);
+          client.println("</td></tr>");
+          client.println("<tr><td>Restart:</td><td><a href=\"/api/device/reboot\">yes</a></td></tr>");
+          //client.println(String("<tr><td>Uptime</td><td>") + timeClient.getFormattedTime() + "</td></tr>");
+          client.println("</table>");
+          client.println("<br />");
 
-        client.println(String("<p>eg. <code>$ curl -d \"{'state': 1}\" ") + toStringIp(WiFi.localIP()) + "/api/led</code></p>");
-        client.println("</center></body></html>");
-      }
+          // Sensor values
+          client.println("<table><tr><th align='left'>Sensors</th></tr>");
+          client.println(String("<tr><td>Temperature:</td><td>") + temperature + " C</td></tr>");
+          client.println(String("<tr><td>Humidity:</td><td>") + humidity + " % RH</td></tr>");
+          client.println(String("<tr><td>Pressure:</td><td>") + pressure + " hPa</td></tr>");
+          client.println(String("<tr><td>Hall:</td><td>") + hall + "</td></tr>");
+          //client.println(String("<tr><td>xxxx</td><td>xxx</td></tr>");
+          client.println("</table>");
+          client.println("<br />");
 
-      else if (method.equals("GET /api/led HTTP/1.1")) {
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-Type: application/json");
-        client.println();
-        client.print("{\"state\": ");
-        if (digitalRead(led_pin) == HIGH) {
-          client.print(1);
-        } else {
-          client.print(0);
+          // the content of the HTTP response follows the header:
+          client.print(String("<b>LED</b> (Pin ") + led_pin + "):&nbsp;");
+          if (digitalRead(led_pin) == HIGH) {
+            client.print("on");
+          } else {
+            client.print("off");
+          }
+          client.println("&nbsp;(Turn <a href=\"/api/led/on\">on</a> or <a href=\"/api/led/off\">off</a>)");
+          client.println("<br />");
+
+          client.println("<hr>");
+          client.println("<p>More sensors, actuators, and kits are available in the online shop of <a href='https://www.bastelgarage.ch'>Bastelgarage.ch</a>.</p>");
+          client.println("</center></body></html>");
+          // The HTTP response ends with another blank line:
+          client.println();
+          // break out of the while loop:
+          client.stop();
         }
-        client.println("}");
-        client.stop();
-      }
-      else if (method.equals("POST /api/led HTTP/1.1")) {
-        char value = post_data.charAt(10);
-        if (value == '1') {
+        // RESTful API section
+        else if (method.equals("GET /api HTTP/1.1")) {
+          Serial.println("Request for /api");
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-type:text/html");
+          client.println();
+          client.println("<!DOCTYPE HTML><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+          client.println("</head><body style='font-family: Verdana,Geneva,sans-serif;'><center>");
+          client.println("<p><b><a href='/'>Ambient Sensor</a></b> | <a href='/api'>RESTful API</a></p>");
+          client.println("<h1>RESTful API</h1><p>");
+          client.println("<p>The RESTful API let you integrate your Measuring Box in your own home automation system or into third-party tools.</p>");
+          client.println("<br />");
+
+          // API end points
+          client.println("<table><tr><th align='left'>End points</th><th align='left'>URL</th></tr>");
+          client.println("<tr><td>All values:</td><td><a href=\"api/states\">api/states</a></td></tr>");
+          client.println("<tr><td>Temperature:</td><td><a href=\"api/temperature\">api/temperature</a></td></tr>");
+          client.println("<tr><td>Humidity:</td><td><a href=\"api/humidity\">api/humidity</a></td></tr>");
+          client.println("<tr><td>Pressure:</td><td><a href=\"api/pressure\">api/pressure</a></td></tr>");
+          client.println("<tr><td>Hall:</td><td><a href=\"api/hall\">api/hall</a></td></tr>");
+          client.println("<tr><td>LED:</td><td><a href=\"api/led\">api/led</a></td></tr>");
+          // client.println("<tr><td>xxxx</td><td>xxx</td></tr>");
+          client.println("</table>");
+          client.println("<br />");
+          client.println("<p>The states can be retrieved by HTTP GET requests. For the temperature the command-line tool <code>curl</code> could be used.</p>");
+          client.println(String("<p>eg. <code>$ curl ") + toStringIp(WiFi.localIP()) + "/api/temperature</code></p>");
+          client.println("<p>To change the state of the LED, issue a HTTP POST requests.");
+          client.println("As browsers usualy don't support POST requests, GET requests are available to <code>/api/led/on</code> to switch the LED on and <code>api/led/off</code> to switch it off.</p>");
+
+          client.println(String("<p>eg. <code>$ curl -d \"{'state': 1}\" ") + toStringIp(WiFi.localIP()) + "/api/led</code></p>");
+          client.println("</center></body></html>");
+        }
+
+        else if (method.equals("GET /api/led HTTP/1.1")) {
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: application/json");
+          client.println();
+          client.print("{\"state\": ");
+          if (digitalRead(led_pin) == HIGH) {
+            client.print(1);
+          } else {
+            client.print(0);
+          }
+          client.println("}");
+          client.stop();
+        }
+        else if (method.equals("POST /api/led HTTP/1.1")) {
+          char value = post_data.charAt(10);
+          if (value == '1') {
+            Serial.println("Switch on LED");
+            digitalWrite(led_pin, HIGH);
+          } else {
+            Serial.println("Switch off LED");
+            digitalWrite(led_pin, LOW);
+          }
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: application/json");
+          client.println();
+          client.print("{\"state\": ");
+          if (digitalRead(led_pin) == HIGH) {
+            client.print(1);
+          } else {
+            client.print(0);
+          }
+          client.println("}");
+          client.stop();
+        }
+        // Brosers don't do POST requests
+        else if (method.equals("GET /api/led/on HTTP/1.1")) {
           Serial.println("Switch on LED");
           digitalWrite(led_pin, HIGH);
-        } else {
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: application/json");
+          client.println();
+          client.println("{\"state\": 1}");
+          client.println();
+          client.stop();
+        }
+        else if (method.equals("GET /api/led/off HTTP/1.1")) {
           Serial.println("Switch off LED");
           digitalWrite(led_pin, LOW);
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: application/json");
+          client.println();
+          client.println("{\"state\": 0}");
+          client.println();
+          client.stop();
         }
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-Type: application/json");
-        client.println();
-        client.print("{\"state\": ");
-        if (digitalRead(led_pin) == HIGH) {
-          client.print(1);
-        } else {
-          client.print(0);
+        else if (method.equals("GET /api/states HTTP/1.1")) {
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: application/json");
+          client.println();
+
+          client.print("{");
+          client.println(String("\"device\":\"") + device_name + "\",");
+
+          client.println("\"states\": {");
+          client.println(String("\"temperature\":") + temperature + ",");
+          client.println(String("\"pressure\":") + pressure + ",");
+          client.println(String("\"humidity\":") + humidity + ",");
+          client.println(String("\"hall\":") + hall + ",");
+          client.println(String("\"led\":") + digitalRead(led_pin));
+          client.print("}}");
+          client.println();
+          client.stop();
         }
-        client.println("}");
+        else if (method.equals("GET /api/hall HTTP/1.1")) {
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: application/json");
+          client.println();
+          client.println(String("{\"value\":") + hallRead() + "}");
+          client.println();
+          client.stop();
+        }
+        else if (method.equals("GET /api/temperature HTTP/1.1")) {
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: application/json");
+          client.println();
+          client.println(String("{\"value\":") + pressure + "}");
+          client.println();
+          client.stop();
+        }
+        else if (method.equals("GET /api/humidity HTTP/1.1")) {
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: application/json");
+          client.println();
+          client.println(String("{\"value\":") + humidity + "}");
+          client.println();
+          client.stop();
+        }
+        else if (method.equals("GET /api/pressure HTTP/1.1")) {
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: application/json");
+          client.println();
+          client.println(String("{\"value\":") + pressure + "}");
+          client.println();
+          client.stop();
+        }
+        // Browser don't do HTTP POST requests
+        else if ((method.equals("POST /api/device/reboot HTTP/1.1")) or (method.equals("GET /api/device/reboot HTTP/1.1"))) {
+          Serial.println("rebooting...");
+          ESP.restart();
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: application/json");
+          client.println();
+          client.println("{\"state\": \"rebooting\"}");
+          client.stop();
+        }
+        else {
+          client.println("HTTP/1.1 404 OK");
+          client.println("Content-type:text/html");
+          client.println();
+          client.println("<!DOCTYPE HTML><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+          client.println("</head><body style='font-family: Verdana,Geneva,sans-serif;'><center>");
+          client.println("<p><b><a href='/'>Ambient sensor</a></b> | <a href='/api'>RESTful API</a></p>");
+          client.println("<h1>Page not available</h1><p>");
+          client.println("</center></body></html>");
+          client.println();
+          client.stop();
+        }
         client.stop();
       }
-      // Brosers don't do POST requests
-      else if (method.equals("GET /api/led/on HTTP/1.1")) {
-        Serial.println("Switch on LED");
-        digitalWrite(led_pin, HIGH);
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-Type: application/json");
-        client.println();
-        client.println("{\"state\": 1}");
-        client.println();
-        client.stop();
-      }
-      else if (method.equals("GET /api/led/off HTTP/1.1")) {
-        Serial.println("Switch off LED");
-        digitalWrite(led_pin, LOW);
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-Type: application/json");
-        client.println();
-        client.println("{\"state\": 0}");
-        client.println();
-        client.stop();
-      }
-      else if (method.equals("GET /api/states HTTP/1.1")) {
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-Type: application/json");
-        client.println();
-
-        client.print("{");
-        client.println(String("\"device\":\"") + device_name + "\",");
-
-        client.println("\"states\": {");
-        client.println(String("\"temperature\":") + temperature + ",");
-        client.println(String("\"pressure\":") + pressure + ",");
-        client.println(String("\"humidity\":") + humidity + ",");
-        client.println(String("\"hall\":") + hall + ",");
-        client.println(String("\"led\":") + digitalRead(led_pin));
-        client.print("}}");
-        client.println();
-        client.stop();
-      }
-      else if (method.equals("GET /api/hall HTTP/1.1")) {
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-Type: application/json");
-        client.println();
-        client.println(String("{\"value\":") + hallRead() + "}");
-        client.println();
-        client.stop();
-      }
-      else if (method.equals("GET /api/temperature HTTP/1.1")) {
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-Type: application/json");
-        client.println();
-        client.println(String("{\"value\":") + pressure + "}");
-        client.println();
-        client.stop();
-      }
-      else if (method.equals("GET /api/humidity HTTP/1.1")) {
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-Type: application/json");
-        client.println();
-        client.println(String("{\"value\":") + humidity + "}");
-        client.println();
-        client.stop();
-      }
-      else if (method.equals("GET /api/pressure HTTP/1.1")) {
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-Type: application/json");
-        client.println();
-        client.println(String("{\"value\":") + pressure + "}");
-        client.println();
-        client.stop();
-      }
-      // Browser don't do HTTP POST requests
-      else if ((method.equals("POST /api/device/reboot HTTP/1.1")) or (method.equals("GET /api/device/reboot HTTP/1.1"))) {
-        Serial.println("rebooting...");
-        ESP.restart();
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-Type: application/json");
-        client.println();
-        client.println("{\"state\": \"rebooting\"}");
-        client.stop();
-      }
-      else {
-        client.println("HTTP/1.1 404 OK");
-        client.println("Content-type:text/html");
-        client.println();
-        client.println("<!DOCTYPE HTML><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-        client.println("</head><body><center>");
-        client.println("<p><b><a href='/'>Ambient sensor</a></b> | <a href='/api'>RESTful API</a></p>");
-        client.println("<h1>Page not available</h1><p>");
-        client.println("</center></body></html>");
-        client.println();
-        client.stop();
-      }
-      client.stop();
     }
+    // Close the connection
+    client.stop();
+    //Serial.println("Client disonnected");
   }
-  // Close the connection
-  client.stop();
-  //Serial.println("Client disonnected");
-}
-// MQTT
-if (output == 1 || output == 2) {
-  if (!mqtt_client.connected()) {
-    reconnect();
-  }
-  mqtt_client.loop();
-}
-long now = millis();
-if (now - lastMsg > interval) {
-  lastMsg = now;
-  // MQTT broker could go away and come back at any timeso doing a forced publish to
-  // make sure something shows up within the first 5 minutes after a reset
-  if (now - lastForceMsg > force_interval) {
-    lastForceMsg = now;
-    forceMsg = true;
-    Serial.println("Forcing publish every 5 minutes...");
-  }
-
-  // Sending data to Thingspeak
-  if (output == 1) {
-    String data = String("field1=" + String(temperature, 2) + "&field2=" + String(pressure, 2) + "&field3=" + String(humidity, 2));
-    // Get the data string length
-    int length = data.length();
-    char msgBuffer[length + 1];
-    // Convert data string to character buffer
-    data.toCharArray(msgBuffer, length + 1);
-    Serial.println(msgBuffer);
-    mqtt_client.publish(thingspeak_topic, msgBuffer);
-  }
-
-  // Sending MQTT messages
-  if (output == 2) {
-    if (checkBound(temperature, old_temperature, diff_temperature) || forceMsg) {
-      old_temperature = temperature;
-      mqtt_client.publish(temperature_topic.c_str(), String(old_temperature).c_str(), true);
+  // MQTT
+  if (output == 1 || output == 2) {
+    if (!mqtt_client.connected()) {
+      reconnect();
     }
-    if (checkBound(humidity, old_humidity, diff_humidity) || forceMsg) {
-      old_humidity = humidity;
-      mqtt_client.publish(humidity_topic.c_str(), String(old_humidity).c_str(), true);
-    }
-    if (checkBound(pressure, old_pressure, diff_pressure) || forceMsg) {
-      old_pressure = pressure;
-      mqtt_client.publish(pressure_topic.c_str(), String(old_pressure).c_str(), true);
-    }
+    mqtt_client.loop();
   }
-  forceMsg = false;
-}
-}
+  long now = millis();
+  if (now - lastMsg > interval) {
+    lastMsg = now;
+    // MQTT broker could go away and come back at any timeso doing a forced publish to
+    // make sure something shows up within the first 5 minutes after a reset
+    if (now - lastForceMsg > force_interval) {
+      lastForceMsg = now;
+      forceMsg = true;
+      Serial.println("Forcing publish every 5 minutes...");
+    }
 
+    // Sending data to Thingspeak
+    if (output == 1) {
+      String data = String("field1=" + String(temperature, 2) + "&field2=" + String(pressure, 2) + "&field3=" + String(humidity, 2));
+      // Get the data string length
+      int length = data.length();
+      char msgBuffer[length + 1];
+      // Convert data string to character buffer
+      data.toCharArray(msgBuffer, length + 1);
+      Serial.println(msgBuffer);
+      mqtt_client.publish(thingspeak_topic, msgBuffer);
+    }
+
+    // Sending MQTT messages
+    if (output == 2) {
+      if (checkBound(temperature, old_temperature, diff_temperature) || forceMsg) {
+        old_temperature = temperature;
+        mqtt_client.publish(temperature_topic.c_str(), String(old_temperature).c_str(), true);
+      }
+      if (checkBound(humidity, old_humidity, diff_humidity) || forceMsg) {
+        old_humidity = humidity;
+        mqtt_client.publish(humidity_topic.c_str(), String(old_humidity).c_str(), true);
+      }
+      if (checkBound(pressure, old_pressure, diff_pressure) || forceMsg) {
+        old_pressure = pressure;
+        mqtt_client.publish(pressure_topic.c_str(), String(old_pressure).c_str(), true);
+      }
+    }
+    forceMsg = false;
+  }
+}
 
