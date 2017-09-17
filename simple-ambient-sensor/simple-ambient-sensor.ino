@@ -6,7 +6,7 @@
 // https://github.com/e-radionicacom/BME280-Arduino-Library
 
 // Device name
-String device_name = "ambient-sensor-simple";
+String device_name = "simple-ambient-sensor";
 
 // WLAN settings
 const char* ssid = "";
@@ -16,7 +16,7 @@ const char* password = "";
 // 1: Thingspeak
 // 2: MQTT
 // 3: Only serial output
-int output = 0;
+int output = 3;
 
 // MQTT settings
 // If you want to use Thingspeak set mqtt_broker to "mqtt.thingspeak.com"
@@ -169,9 +169,9 @@ void setup() {
     Serial.println();
     Serial.print("Connecting to ");
     Serial.println(ssid);
-  
+
     WiFi.begin(ssid, password);
-  
+
     while (WiFi.status() != WL_CONNECTED) {
       delay(500);
       Serial.print(".");
@@ -180,7 +180,7 @@ void setup() {
     Serial.println("WiFi connected");
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
-  
+
     // Start HTTP server
     server.begin();
     Serial.println("Web server started");
@@ -188,7 +188,7 @@ void setup() {
 
   // Setup the MQTT client
   if (output == 1 || output == 2) {
-  mqtt_client.setServer(mqtt_broker, mqtt_port);
+    mqtt_client.setServer(mqtt_broker, mqtt_port);
   }
   // Callback is not needed for Thingspeak
   if (output == 2) {
@@ -197,16 +197,26 @@ void setup() {
 }
 
 void loop() {
-  if (output != 3) {
-    WiFiClient client = server.available();   // Listen for incoming client requests
-  }
   // Read values from sensor
   temperature = bme.readTemp();
   pressure = bme.readPressure() / 100.0F;
   humidity = bme.readHumidity();
   hall = hallRead();
 
+  if (output == 3) {
+    Serial.print("Temperature: ");
+    Serial.println(temperature);
+    Serial.print("Humidity: ");
+    Serial.println(humidity);
+    Serial.print("Pressure: ");
+    Serial.println(pressure);
+    Serial.print("Hall: ");
+    Serial.println(hall);
+    delay(2000);
+  }
+
   if (output != 3) {
+    WiFiClient client = server.available();   // Listen for incoming client requests
     if (client) {                             // If you get a client,
       while (client.connected()) {            // Loop while the client's connected
         if (client.available()) {             // If there's bytes to read from the client,
@@ -221,11 +231,11 @@ void loop() {
           Serial.println(post_data);
           Serial.println();
           client.flush();
-  
+
           if (method.equals("GET /favicon.ico HTTP/1.1")) {
             Serial.println("Get the favicon.ico");
           }
-  
+
           else if (method.equals("GET / HTTP/1.1")) {
             Serial.println("Request for /");
             client.println("HTTP/1.1 200 OK");
@@ -235,7 +245,7 @@ void loop() {
             client.println("</head><body style='font-family: Verdana,Geneva,sans-serif;'><center>");
             client.println("<p><b><a href='/'>Ambient Sensor</a></b> | <a href='/api'>RESTful API</a></p>");
             client.println("<h1>Overview</h1><p>");
-  
+
             // Device details
             client.println("<table><tr><th align='left'>Device</th></tr>");
             client.println(String("<tr><td>Device name:</td><td>") + device_name + "</td></tr>");
@@ -247,7 +257,7 @@ void loop() {
             //client.println(String("<tr><td>Uptime</td><td>") + timeClient.getFormattedTime() + "</td></tr>");
             client.println("</table>");
             client.println("<br />");
-  
+
             // Sensor values
             client.println("<table><tr><th align='left'>Sensors</th></tr>");
             client.println(String("<tr><td>Temperature:</td><td>") + temperature + " C</td></tr>");
@@ -257,7 +267,7 @@ void loop() {
             //client.println(String("<tr><td>xxxx</td><td>xxx</td></tr>");
             client.println("</table>");
             client.println("<br />");
-  
+
             // the content of the HTTP response follows the header:
             client.print(String("<b>LED</b> (Pin ") + led_pin + "):&nbsp;");
             if (digitalRead(led_pin) == HIGH) {
@@ -267,7 +277,7 @@ void loop() {
             }
             client.println("&nbsp;(Turn <a href=\"/api/led/on\">on</a> or <a href=\"/api/led/off\">off</a>)");
             client.println("<br />");
-  
+
             client.println("<hr>");
             client.println("<p>More sensors, actuators, and kits are available in the online shop of <a href='https://www.bastelgarage.ch'>Bastelgarage.ch</a>.</p>");
             client.println("</center></body></html>");
@@ -288,7 +298,7 @@ void loop() {
             client.println("<h1>RESTful API</h1><p>");
             client.println("<p>The RESTful API let you integrate your Measuring Box in your own home automation system or into third-party tools.</p>");
             client.println("<br />");
-  
+
             // API end points
             client.println("<table><tr><th align='left'>End points</th><th align='left'>URL</th></tr>");
             client.println("<tr><td>All values:</td><td><a href=\"api/states\">api/states</a></td></tr>");
@@ -304,11 +314,11 @@ void loop() {
             client.println(String("<p>eg. <code>$ curl ") + toStringIp(WiFi.localIP()) + "/api/temperature</code></p>");
             client.println("<p>To change the state of the LED, issue a HTTP POST requests.");
             client.println("As browsers usualy don't support POST requests, GET requests are available to <code>/api/led/on</code> to switch the LED on and <code>api/led/off</code> to switch it off.</p>");
-  
+
             client.println(String("<p>eg. <code>$ curl -d \"{'state': 1}\" ") + toStringIp(WiFi.localIP()) + "/api/led</code></p>");
             client.println("</center></body></html>");
           }
-  
+
           else if (method.equals("GET /api/led HTTP/1.1")) {
             client.println("HTTP/1.1 200 OK");
             client.println("Content-Type: application/json");
@@ -368,10 +378,10 @@ void loop() {
             client.println("HTTP/1.1 200 OK");
             client.println("Content-Type: application/json");
             client.println();
-  
+
             client.print("{");
             client.println(String("\"device\":\"") + device_name + "\",");
-  
+
             client.println("\"states\": {");
             client.println(String("\"temperature\":") + temperature + ",");
             client.println(String("\"pressure\":") + pressure + ",");
@@ -446,15 +456,15 @@ void loop() {
   }
   // MQTT
   if (output == 1 || output == 2) {
-  if (!mqtt_client.connected()) {
-    reconnect();
-  }
-  mqtt_client.loop();
+    if (!mqtt_client.connected()) {
+      reconnect();
+    }
+    mqtt_client.loop();
   }
   long now = millis();
   if (now - lastMsg > interval) {
     lastMsg = now;
-    // MQTT broker could go away and come back at any timeso doing a forced publish to 
+    // MQTT broker could go away and come back at any timeso doing a forced publish to
     // make sure something shows up within the first 5 minutes after a reset
     if (now - lastForceMsg > force_interval) {
       lastForceMsg = now;
