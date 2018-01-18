@@ -16,12 +16,12 @@ const char* password = "";
 // 1: Thingspeak
 // 2: MQTT
 // 3: Only serial output
-int output = 3;
+int output = 2;
 
 // MQTT settings
 // If you want to use Thingspeak set mqtt_broker to "mqtt.thingspeak.com"
-//const char* mqtt_broker = "";
-const char* mqtt_broker = "mqtt.thingspeak.com";
+const char* mqtt_broker = "";
+//const char* mqtt_broker = "mqtt.thingspeak.com";
 // Not needed for Thingspeak
 const char* mqtt_username = "";
 const char* mqtt_password = "";
@@ -31,7 +31,6 @@ int mqtt_port = 1883; // This is the default port for MQTT
 // Replace <YOUR-CHANNEL-ID> with your channel ID and <YOUR-CHANNEL-WRITEAPIKEY>
 // with your write API key
 const char* thingspeak_topic = "channels/<YOUR-CHANNEL-ID>/publish/<YOUR-CHANNEL-WRITEAPIKEY>/";
-
 
 // Pin for an additional LED
 int led_pin = 2;
@@ -157,7 +156,7 @@ void setup() {
   pinMode(led_pin, OUTPUT);
   delay(10);
 
-  chipid = ESP.getEfuseMac();
+//  chipid = ESP.getEfuseMac();
 
   bme.settings(0, 3, 0, 0, 3, 3, 3);
   while (bme.begin()) {
@@ -201,7 +200,7 @@ void loop() {
   temperature = bme.readTemp();
   pressure = bme.readPressure() / 100.0F;
   humidity = bme.readHumidity();
-  hall = hallRead();
+  //hall = hallRead();
 
   if (output == 3) {
     Serial.print("Temperature: ");
@@ -210,8 +209,8 @@ void loop() {
     Serial.println(humidity);
     Serial.print("Pressure: ");
     Serial.println(pressure);
-    Serial.print("Hall: ");
-    Serial.println(hall);
+    //Serial.print("Hall: ");
+    //Serial.println(hall);
     delay(2000);
   }
 
@@ -263,7 +262,7 @@ void loop() {
             client.println(String("<tr><td>Temperature:</td><td>") + temperature + " C</td></tr>");
             client.println(String("<tr><td>Humidity:</td><td>") + humidity + " % RH</td></tr>");
             client.println(String("<tr><td>Pressure:</td><td>") + pressure + " hPa</td></tr>");
-            client.println(String("<tr><td>Hall:</td><td>") + hall + "</td></tr>");
+            //client.println(String("<tr><td>Hall:</td><td>") + hall + "</td></tr>");
             //client.println(String("<tr><td>xxxx</td><td>xxx</td></tr>");
             client.println("</table>");
             client.println("<br />");
@@ -392,14 +391,14 @@ void loop() {
             client.println();
             client.stop();
           }
-          else if (method.equals("GET /api/hall HTTP/1.1")) {
-            client.println("HTTP/1.1 200 OK");
-            client.println("Content-Type: application/json");
-            client.println();
-            client.println(String("{\"value\":") + hallRead() + "}");
-            client.println();
-            client.stop();
-          }
+//          else if (method.equals("GET /api/hall HTTP/1.1")) {
+//            client.println("HTTP/1.1 200 OK");
+//            client.println("Content-Type: application/json");
+//            client.println();
+//            client.println(String("{\"value\":") + hallRead() + "}");
+//            client.println();
+//            client.stop();
+//          }
           else if (method.equals("GET /api/temperature HTTP/1.1")) {
             client.println("HTTP/1.1 200 OK");
             client.println("Content-Type: application/json");
