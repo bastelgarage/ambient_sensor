@@ -2,6 +2,7 @@
 #include <PubSubClient.h>
 #include <esp_wifi.h>
 #include <DallasTemperature.h>
+#include "esp_deep_sleep.h"
 
 // Device name
 String device_name = "ambient-sensor-outdoor";
@@ -172,6 +173,7 @@ void loop() {
   // Sending MQTT messages
   if (output == 2) {
     mqtt_client.publish(temperature_topic.c_str(), String(temperature).c_str(), true);
+    delay(50);
     esp_wifi_stop();
     esp_deep_sleep_start();
   }
